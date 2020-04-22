@@ -46,20 +46,21 @@
 	 			return false;
 	 		}
 	 	}
-
+	 	// idx * stepH + start + 35 = val
+	 	// val - 35 - start / stepH = idx
 	 	function getSpaceIndex(posX,posY){
-	 		var remX = Math.floor((posX - start)/stepH) ;
-	 		var remY = Math.floor((posY - start)/stepW);
+	 		var remX = Math.floor((posX - start)/stepW);
+	 		var remY = Math.floor((posY - start)/stepH);
 
-	 		var index = COLS*remX + remY - 10;
+	 		var index = COLS*remX + remY;
 	 		return index;
 	 	}
 
 	 	function buildBoard(){
 	 		for (var i = 0; i < ROWS; i+=1) {
 				for (var j = 0; j < COLS; j+=1) {
-					var x_shift = start + i*stepH;
-					var y_shift = start + j*stepW;
+					var x_shift = start + i*stepW;
+					var y_shift = start + j*stepH;
 					var variant = Math.floor(Math.random() * 256)
 					var r = (x_shift + variant)  % 256; 
 					var g = (y_shift+ variant) % 256;
@@ -179,9 +180,14 @@
 
 		// Grabs co-ordinates from canvas
 		$("canvas").click(function(event){
-			var clickedX = event.pageX;
-			var clickedY = event.pageY;
+			/////
+			var canvasOffsetX = $(this).position().left;
+			var canvasOffsetY = $(this).position().top;
+
+			var clickedX = event.pageX - canvasOffsetX;
+			var clickedY = event.pageY - canvasOffsetY;
 			var idx = getSpaceIndex(clickedX, clickedY);
+			/////
 			console.log(event.pageX, event.pageY);
 			console.log(spaces[idx]);
 			if(!spaces[idx].clicked){
@@ -201,7 +207,16 @@
 
 				}
 			}
-		})
+		});
+
+		// $("canvas").mousemove(function(e){
+		// 	var clickedX = event.pageX;
+		// 	var clickedY = event.pageY;
+		// 	var idx = getSpaceIndex(clickedX, clickedY);
+		// 	console.log(event.pageX, event.pageY);
+		// 	console.log(spaces[idx]);
+
+		// });
 
 
 		// var store = spaces;
