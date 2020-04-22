@@ -1,0 +1,28 @@
+html,
+body{
+	height: 100%;
+	background-color: black;
+}
+
+
+
+
+canvas{
+	height: 800px;
+	width:800px;
+	background-color: grey;
+	border: 2px solid white;
+	
+}
+
+
+#ms-container{
+	left: 50%;
+	margin-top: 15%;
+	position: static;
+}
+
+.ms-footer-metrics{
+	background-color: beige;
+	align-items: center;
+}

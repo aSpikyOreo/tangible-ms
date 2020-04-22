@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>Tangible MineSweeper</title>
+	<script type="text/javascript" src="assets/js/lib/paperjs/dist/paper-full.min.js"></script>
+	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="assets/css/styles.css">
+	<script type="text/paperscript" canvas="ms-canvas">
+
+		//Setup --> Drawing the Canvas, and the board's outline
+		
+		//Build --> Producing, loading and creating the game's core content: 
+		//          --> Assigning a mine by probability
+		//          --> Identifying the number of neighbours each space has 
+		//          --> Loading UI (i.e: Flag-Count, Timer)
+		//          --> Starting metric analyser
+		
+
+		//Begin --> Load in-game functionality and incorporate this with PaperJS
+		//          animation
+		//		--> Begin recording game data that takes place based on the notes
+		//          on user metrrics
+
+		
+		//End   --> Either when user WINs or LOSEs, terminate activity and shut down 
+
+		//Deploy and Send --> Store analytics to a database via Plotly
+		//                --> Prompt the user for qualitative feedback
+		//                --> FIN
+
+
+		// Comparative Study Features:
+		//            --> Board 1: Static boring board that plays basic MineSweeper and 				  tracks metrics
+
+		//        	  --> Board 2: Include animation and sound via PaperJS and Howler 					  in an attempt to invoke a sense of tangibility 
+
+
+		// The three questionnaires are an attempt to contrast between manipulating user immersion and the contrast between qualitative and quantitative features they possess. Is there enough evidence to suggest a correlation? Did this have an impact between overall engagement or are there too many factors to be considered for this to be possible?
+
+		function assignMine(){
+	 		var rand_num = Math.floor(Math.random() * 20);
+	 		if(rand_num >= 17) {
+	 			return true;
+	 		} else{
+	 			return false;
+	 		}
+	 	}
+
+	 	function getSpaceIndex(posX,posY){
+	 		var remX = Math.floor((posX - start)/stepH) ;
+	 		var remY = Math.floor((posY - start)/stepW);
+
+	 		var index = COLS*remX + remY - 10;
+	 		return index;
+	 	}
+
+	 	function buildBoard(){
+	 		for (var i = 0; i < ROWS; i+=1) {
+				for (var j = 0; j < COLS; j+=1) {
+					var x_shift = start + i*stepH;
+					var y_shift = start + j*stepW;
+					var variant = Math.floor(Math.random() * 256)
+					var r = (x_shift + variant)  % 256; 
+					var g = (y_shift+ variant) % 256;
+					var b = (x_shift+y_shift + variant) % 256;
+					var myCircle = new Path.Circle(new Point(x_shift+35,(y_shift+35)),35).fillColor = "rgb(" + r + ", " + g + ", " + b + ")";
+					//initialise space object
+
+
+					var spaceObj = {index: n, pos_x: 0, pos_y: 0, holdsMine: 0, adjacentNeighbours: 0, clicked: false};
+					spaceObj.pos_x = x_shift+35;
+					spaceObj.pos_y = y_shift+35;
+					spaceObj.holdsMine = assignMine();
+					spaces.push(spaceObj);
+					n++;
+				}
+			}
+
+	 	}
+
+	 	function init(){
+	 		buildBoard();
+		}
+
+	 	var canvas = document.getElementsByTagName("canvas")[0];
+	 	var ROWS = 8;
+	 	var COLS = 8;
+	 	// end/ROWS allows for about a space width of 44 either side
+	 	var start = Math.floor(Number(Math.floor(canvas.height)) / (ROWS*2))
+	 	var end = Number(Math.floor(canvas.height));
+	 	var stepH = Number(Math.floor((1/(ROWS)) * end));
+	 	var stepW = Number(Math.floor((1/(COLS)) * end));
+	 	var spaces = new Array();
+	 	console.log(start,end,stepH, stepW);
+	 	var n = 0;
+	 	//Construction of Game Mechanics
+		init();
+
+		function identifyNeighbours(x_max,y_max){
+	 		var traversalIndex = 0;
+
+	 		//inner square
+	 		for (var i = 0; i < x_max*y_max; i++) {
+	 			traversalIndex = (i % y_max);
+
+	 		if((traversalIndex != 0) && (traversalIndex != (y_max-1)) 
+	 		&& (i <= ((y_max)*(x_max-1)-1)) && (i >= y_max+1) ){
+	 			spaces[i].adjacentNeighbours = spaces[(i-1)].holdsMine
+	 									   + spaces[i+1].holdsMine
+	 									   + spaces[i+y_max].holdsMine
+	 									   + spaces[i-y_max].holdsMine
+	 									   + spaces[(i-1)+y_max].holdsMine
+	 									   + spaces[(i-1)-y_max].holdsMine
+	 									   + spaces[(i+1)+y_max].holdsMine
+	 									   + spaces[(i+1)-y_max].holdsMine;
+				}
+			// console.log(isNaN(spaces[i].holdsMine))
+			}
+
+			//four courners
+			spaces[0].adjacentNeighbours = spaces[y_max].holdsMine
+									   + spaces[y_max+1].holdsMine
+									   + spaces[1].holdsMine;
+
+			spaces[y_max-1].adjacentNeighbours = spaces[(y_max-1) - 1].holdsMine
+											 + spaces[(y_max-1) + y_max].holdsMine
+											 + spaces[(y_max-1) + y_max-1].holdsMine;
+
+			spaces[y_max*x_max-1].adjacentNeighbours = spaces[(y_max*x_max-1)-1].holdsMine
+												   + spaces[(y_max*x_max-1)-y_max].holdsMine
+												   + spaces[(y_max*x_max-1)-(y_max+1)].holdsMine;
+
+			spaces[(x_max *(y_max-1))].adjacentNeighbours = spaces[(x_max *(y_max-1))+ 1].holdsMine
+                                                     + spaces[(x_max *(y_max-1))-y_max].holdsMine
+                                                     + spaces[(x_max *(y_max-1))-(y_max)+1].holdsMine; 
+
+
+            for(var k = 1; k < y_max-1; k++){
+
+		 		//left column
+		 		spaces[k].adjacentNeighbours = spaces[k-1].holdsMine
+		 								   + spaces[k+1].holdsMine
+		 								   + spaces[k+y_max].holdsMine
+		 								   + spaces[k+y_max - 1].holdsMine
+		 								   + spaces[k+y_max + 1].holdsMine;
+
+
+
+
+		 		//right column
+		 		spaces[x_max *(y_max-1) + k].adjacentNeighbours = spaces[ (x_max *(y_max-1) + k) + 1].holdsMine
+		 								+ spaces[x_max *(y_max-1) + k - 1].holdsMine
+									   + spaces[x_max *(y_max-1) + k - y_max].holdsMine
+									   + spaces[x_max *(y_max-1) + k - y_max + 1].holdsMine
+									   + spaces[x_max *(y_max-1) + k - y_max - 1].holdsMine;
+
+
+		 		
+		 		//top row
+		 		spaces[k*y_max].adjacentNeighbours = spaces[k*y_max + 1].holdsMine
+		 									     + spaces[(k+1)*y_max].holdsMine
+		 									     + spaces[(k-1)*y_max].holdsMine
+		 									     + spaces[(k+1)*y_max + 1].holdsMine
+		 									     + spaces[(k-1)*y_max + 1].holdsMine;
+
+
+
+		 		//bottom row
+		 		spaces[(k+1)*(y_max)-1].adjacentNeighbours = spaces[(k+1)*(y_max)-1 - 1].holdsMine
+		 											+ spaces[(k+1)*(y_max)-1 - y_max].holdsMine
+		 										    + spaces[(k+1)*(y_max)-1 + y_max].holdsMine
+		 											+ spaces[(k+1)*(y_max)-1 - y_max-1].holdsMine
+		 										    + spaces[(k+1)*(y_max)-1 +y_max-1].holdsMine;
+	 		}
+	 	}
+
+		identifyNeighbours(ROWS,COLS);
+
+		// Grabs co-ordinates from canvas
+		$("canvas").click(function(event){
+			var clickedX = event.pageX;
+			var clickedY = event.pageY;
+			var idx = getSpaceIndex(clickedX, clickedY);
+			console.log(event.pageX, event.pageY);
+			console.log(spaces[idx]);
+			if(!spaces[idx].clicked){
+				if(spaces[idx].holdsMine){
+					alert("Game Over");
+					for (var i = 0; i < spaces.length; i++) {
+						var myCircle = new Path.Circle(new Point(spaces[i].pos_x,(spaces[i].pos_y)),35).fillColor = 'orange';
+					}
+				} else{
+					alert("You're ok, please continue!")
+					var myCircle = new Path.Circle(new Point(spaces[idx].pos_x,(spaces[idx].pos_y)),35).fillColor = 'grey';
+					var text = new PointText(new Point(spaces[idx].pos_x,(spaces[idx].pos_y)));
+					text.justification = 'center';
+					text.fillColor = 'black';
+					text.content = spaces[idx].adjacentNeighbours;
+					spaces[idx].clicked = true;
+
+				}
+			}
+		})
+
+
+		// var store = spaces;
+
+		// identifyNeighbours(spaces,ROWS, COLS);
+
+	</script>
+
+	</head>
+	<body>
+		<!-- <nav class="navbar navbar-light bg-light">
+		  <span class="navbar-brand mb-0 h1">Navbar</span>
+		</nav> -->
+
+		<div class="title-text">
+			<nav class="navbar navbar-light bg-light">
+			  <span class="navbar-brand mb-0 h1">Tangible Minesweeper!</span>
+			</nav>
+		</div>
+
+		<div id="ms-container"class="container-fluid">
+			<div class= "row justify-content-center align-items-center">
+				<canvas id="ms-canvas" resize></canvas>
+			</div>
+		</div>
+
+		<div class="ms-footer-metrics jumbotron mt-5">
+		  <div class="row justify-content-center">
+		    <h1 class="display-5">Link to Questionnaires below:</h1>
+		    <button>Questionnaire 1</button>
+		    <button>Questionnaire 2</button>
+		    <button>Questionnaire 3</button>
+		  </div>
+		</div>
+
+	<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+</body>
+</html>
