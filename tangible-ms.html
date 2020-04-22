@@ -38,6 +38,110 @@
 
 		// The three questionnaires are an attempt to contrast between manipulating user immersion and the contrast between qualitative and quantitative features they possess. Is there enough evidence to suggest a correlation? Did this have an impact between overall engagement or are there too many factors to be considered for this to be possible?
 
+		var canvas = document.getElementsByTagName("canvas")[0];
+	 	var ROWS = 8;
+	 	var COLS = 8;
+	 	// end/ROWS allows for about a space width of 44 either side
+	 	var start = Math.floor(Number(Math.floor(canvas.height)) / (ROWS*2))
+	 	var end = Number(Math.floor(canvas.height));
+	 	var stepH = Number(Math.floor((1/(ROWS)) * end));
+	 	var stepW = Number(Math.floor((1/(COLS)) * end));
+	 	var spaces = new Array();
+	 	console.log(start,end,stepH, stepW);
+	 	var n = 0;
+
+
+	 	// only one unsuccessful move can be made so:
+	 		// if player fails: (n-1) / (ROWS*COLS - mineCount) 
+	 		// if player succeeds: 100% and time 
+
+
+	 	var playerStats = {
+	 				   name: "",
+	 				   movesMade: 0,
+					   timeTaken: 0, 
+					   currentMoveDuration: 0, 
+					   mines: 0, 
+					   flags: 0, 
+					   flagsUsed: 0,
+					  };
+
+	 	//Construction of Game Mechanics
+		init();
+		identifyNeighbours(ROWS,COLS);
+		viewPositionMetrics();
+
+		function viewPositionMetrics(){
+			$("canvas").mousedown(function(event){
+				var canvasOffsetX = $(this).position().left;
+				var canvasOffsetY = $(this).position().top;
+
+				var clickedX = Math.floor(event.pageX - canvasOffsetX);
+				var clickedY = Math.floor(event.pageY - canvasOffsetY);
+				console.log(clickedX, clickedY);
+				switch (event.which){
+					case 1: 
+						//co-ords from click listener are able to progress the game
+						startRound(clickedX, clickedY); 
+						break;
+
+
+					case 3: 
+						placeFlag(clickedX, clickedY);
+						break;
+
+					default:
+						alert("error, something seems to be wrong..");
+				}
+			});
+		}
+
+		function viewMousePosition(){
+			$("canvas").mousemove(function(event){
+				var canvasOffsetX = $(this).position().left;
+				var canvasOffsetY = $(this).position().top;
+
+				var posX = Math.floor(event.pageX - canvasOffsetX);
+				var posY = Math.floor(event.pageY - canvasOffsetY);
+
+				//TODO: every 0.5 - 1.0s, push this into a data structure to prep for time-series graph
+				//NOTE: here would be a potentially good location to add plotly functionality 
+				console.log(posX, posY);
+
+			});
+		}
+
+
+		function placeFlag(posX, posY){
+			var idx = getSpaceIndex(posX, posY);
+			if(!spaces[idx].flagged){
+				var myCircle = new Path.Circle(new Point(spaces[idx].pos_x,(spaces[idx].pos_y)),10).fillColor = 'pink';
+				spaces[idx].flagged = true;
+			} else{
+				var myCircle = new Path.Circle(new Point(spaces[idx].pos_x,(spaces[idx].pos_y)),10).fillColor = spaces[idx].color;
+				spaces[idx].flagged = false;
+			}
+
+
+
+		}
+
+
+		function viewGameProgression(){
+			var clearPercentage = Math.floor((playerStats.movesMade)/(ROWS+COLS -playerStats.mineCount));
+			console.log(clearPercentage);
+
+		}
+
+		function startRound(posX, posY){
+			// Grabs co-ordinates from canvas
+			var idx = getSpaceIndex(posX, posY);
+			console.log(spaces[idx]);
+			determineOutcome(idx);
+		}
+
+
+
 		function assignMine(){
 	 		var rand_num = Math.floor(Math.random() * 20);
 	 		if(rand_num >= 17) {
@@ -56,47 +160,56 @@
 	 		return index;
 	 	}
 
+	 	function randomColorGenerator(posX, posY){
+	 		var variant = Math.floor(Math.random() * 256);
+			var r = (posX + variant)  % 256; 
+			var g = (posY + variant) % 256;
+			var b = (posX + posY + variant) % 256;
+			return "rgb(" + r + ", " + g + ", " + b + ")";
+
+	 	}
+
 	 	function buildBoard(){
+	 		var mineCount = 0;
 	 		for (var i = 0; i < ROWS; i+=1) {
 				for (var j = 0; j < COLS; j+=1) {
 					var x_shift = start + i*stepW;
 					var y_shift = start + j*stepH;
-					var variant = Math.floor(Math.random() * 256)
-					var r = (x_shift + variant)  % 256; 
-					var g = (y_shift+ variant) % 256;
-					var b = (x_shift+y_shift + variant) % 256;
-					var myCircle = new Path.Circle(new Point(x_shift+35,(y_shift+35)),35).fillColor = "rgb(" + r + ", " + g + ", " + b + ")";
+					var circleCol = randomColorGenerator(x_shift,y_shift);
+					var myCircle = new Path.Circle(new Point(x_shift+35,(y_shift+35)),35).fillColor = circleCol;
 					//initialise space object
 
 
-					var spaceObj = {index: n, pos_x: 0, pos_y: 0, holdsMine: 0, adjacentNeighbours: 0, clicked: false};
+					var spaceObj = {
+									index: n, 
+									color: circleCol,
+									pos_x: 0, pos_y: 0, 
+									holdsMine: 0, 
+									adjacentNeighbours: 0, 
+									clicked: false,
+									flagged: false,
+									};
+
 					spaceObj.pos_x = x_shift+35;
 					spaceObj.pos_y = y_shift+35;
 					spaceObj.holdsMine = assignMine();
+
+					if(spaceObj.holdsMine){
+						mineCount++;
+					}
+
 					spaces.push(spaceObj);
 					n++;
 				}
 			}
 
+			playerStats.mines = mineCount;
+			playerStats.flags = mineCount;
 	 	}
 
 	 	function init(){
 	 		buildBoard();
 		}
-
-	 	var canvas = document.getElementsByTagName("canvas")[0];
-	 	var ROWS = 8;
-	 	var COLS = 8;
-	 	// end/ROWS allows for about a space width of 44 either side
-	 	var start = Math.floor(Number(Math.floor(canvas.height)) / (ROWS*2))
-	 	var end = Number(Math.floor(canvas.height));
-	 	var stepH = Number(Math.floor((1/(ROWS)) * end));
-	 	var stepW = Number(Math.floor((1/(COLS)) * end));
-	 	var spaces = new Array();
-	 	console.log(start,end,stepH, stepW);
-	 	var n = 0;
-	 	//Construction of Game Mechanics
-		init();
 
 		function identifyNeighbours(x_max,y_max){
 	 		var traversalIndex = 0;
@@ -176,38 +289,26 @@
 	 		}
 	 	}
 
-		identifyNeighbours(ROWS,COLS);
-
-		// Grabs co-ordinates from canvas
-		$("canvas").click(function(event){
-			/////
-			var canvasOffsetX = $(this).position().left;
-			var canvasOffsetY = $(this).position().top;
-
-			var clickedX = event.pageX - canvasOffsetX;
-			var clickedY = event.pageY - canvasOffsetY;
-			var idx = getSpaceIndex(clickedX, clickedY);
-			/////
-			console.log(event.pageX, event.pageY);
-			console.log(spaces[idx]);
-			if(!spaces[idx].clicked){
-				if(spaces[idx].holdsMine){
+	 	function determineOutcome(index){
+	 		if(!spaces[index].clicked){
+				if(spaces[index].holdsMine){
 					alert("Game Over");
 					for (var i = 0; i < spaces.length; i++) {
 						var myCircle = new Path.Circle(new Point(spaces[i].pos_x,(spaces[i].pos_y)),35).fillColor = 'orange';
 					}
 				} else{
 					alert("You're ok, please continue!")
-					var myCircle = new Path.Circle(new Point(spaces[idx].pos_x,(spaces[idx].pos_y)),35).fillColor = 'grey';
-					var text = new PointText(new Point(spaces[idx].pos_x,(spaces[idx].pos_y)));
+					var myCircle = new Path.Circle(new Point(spaces[index].pos_x,(spaces[index].pos_y)),35).fillColor = 'grey';
+					var text = new PointText(new Point(spaces[index].pos_x,(spaces[index].pos_y)));
 					text.justification = 'center';
 					text.fillColor = 'black';
-					text.content = spaces[idx].adjacentNeighbours;
-					spaces[idx].clicked = true;
+					text.content = spaces[index].adjacentNeighbours;
+					spaces[index].clicked = true;
+					playerStats.movesMade++;
 
 				}
 			}
-		});
+	 	}
 
 		// $("canvas").mousemove(function(e){
 		// 	var clickedX = event.pageX;
@@ -215,13 +316,6 @@
 		// 	var idx = getSpaceIndex(clickedX, clickedY);
 		// 	console.log(event.pageX, event.pageY);
 		// 	console.log(spaces[idx]);
-
-		// });
-
-
-		// var store = spaces;
-
-		// identifyNeighbours(spaces,ROWS, COLS);
 
 	</script>
 
