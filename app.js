@@ -3,74 +3,74 @@
 const express = require('express');
 const app = express();
 const path = require('path');
-const router = express.Router();
+const mongoose = require('mongoose');
+const PostMetrics = require(path.join(__dirname,'models','Metrics'));
+
+require('dotenv/config');
 
 var bodyParser = require('body-parser');
-var MongoClient = require('mongodb').MongoClient
-var metrics_db;
-
-//Begin connecting to MongoClient
-// MongoClient.connect('mongodb://localhost:27017/metrics_db',{
-// 	useUnifiedTopology: true,
-// 	useNewUrlParser: true,
-// }).then(() => console.log("Connected to MongoDB!")).catch(err => {
-// 	console.log(err.message);
-// });
 
 
-// MongoClient.set('useUnifiedTopology', true);
-// MongoClient.set('useNewUrlParser', true);
-
-// MongoClient.connect('mongodb://localhost:27017/metrics_db', { useUnifiedTopology: true,useNewUrlParser: true  },function (err, db) {
-//    // { useUnifiedTopology: true };
-//    // { useNewUrlParser: true };
-//    if (err) {
-//        throw err
-//    } else {
-// 	metrics_db = db;
-// 	console.log('Connected to MongoDB');
-// 	//Start app only after connection is ready
-//    }
-//  });
-
-
+// MIDDLEWARE
 app.use('/assets', express.static('assets'));
-
-
 app.use(bodyParser.json());
 
-// app.use(express.static('assets'));
 
+
+//ROUTES
 app.get("/", function(req,res){
-	res.sendFile(path.join(__dirname+'/start.html'));
+	res.sendFile(path.join(__dirname,'public','start.html'));
 	// load  welcome page
 });
 
 
 app.get('/:minesweeperMode', function(req,res){
 	var msMode = req.params.minesweeperMode;
-	if(msMode === "stage1") res.sendFile(path.join(__dirname+'/tangible-ms.html'));
+	if(msMode === "stage1") res.sendFile(path.join(__dirname,'public','tangible-ms.html'));
 	// else if(msMode === "stage2") res.send("Start part 2 of study");
 	else res.send("Invalid location");
+}); 
 
-	// res.send("Tangible Minesweeper loaded")
-})
 
-// app.get('/', function(req,res){
-// 	res.sendFile(path.join(__dirname, '/tangible-ms.html'));
-// });
 
-// app.post('/', function(req,res){
-// 	metrics_db.collection('particpants').insert(req.body, function(err,res){
-// 		if(err){
-// 			res.send("That didn't quite work...Please review.");
-// 		} else{
-// 			res.send("Sucessful!");
-// 		}
-// 	});
-// });
+//POSTING USER METRICS
+app.post('/:minesweeperMode', async function(req,res){
+	// console.log(req.body);
+	const userMetrics = new PostMetrics({
+		playerName: req.body.playerName,
+		minesweeperVersion: req.body.minesweeperVersion,
+		movesMade: req.body.movesMade,
+		timeTaken: req.body.timeTaken,
+		averageMoveDuration: req.body.averageMoveDuration,
+		progressionPercentage: req.body.progressionPercentage,
+		flagsUsed: req.body.flagsUsed
+	});
 
-app.use('/', router);
+	try{
+
+	const savedMetrics = await userMetrics.save();
+	res.json(savedMetrics);
+	}catch(err){
+		res.json({message: err});
+	}   
+			// .then(metrics => {
+			// 	res.json(metrics);
+			// })
+			// .catch(err => {
+			// 	res.json({ message: err});
+			// });
+});
+
+
+
+//CONNECT TO CLOUD DATABASE
+mongoose.connect(process.env.DB_CONNECTION,
+    { useUnifiedTopology: true, useNewUrlParser: true }, () =>
+	console.log("DB connected... Ready for storing..")
+	);
+
+
+
 
 app.listen(3000, function(){
 		console.log("Starting localhost on PORT 3000: ");
