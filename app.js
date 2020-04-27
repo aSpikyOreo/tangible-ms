@@ -35,14 +35,18 @@ app.get('/:minesweeperMode', function(req,res){
 
 //POSTING USER METRICS
 app.post('/:minesweeperMode', async function(req,res){
-	// console.log(req.body);
+
+	const testB = req.body;
+	console.log(req.body);
 	const userMetrics = new PostMetrics({
 		playerName: req.body.playerName,
 		minesweeperVersion: req.body.minesweeperVersion,
 		movesMade: req.body.movesMade,
 		timeTaken: req.body.timeTaken,
 		averageMoveDuration: req.body.averageMoveDuration,
+		totalMines: req.body.totalMines,
 		progressionPercentage: req.body.progressionPercentage,
+		flags: req.body.flags,
 		flagsUsed: req.body.flagsUsed
 	});
 
@@ -53,12 +57,6 @@ app.post('/:minesweeperMode', async function(req,res){
 	}catch(err){
 		res.json({message: err});
 	}   
-			// .then(metrics => {
-			// 	res.json(metrics);
-			// })
-			// .catch(err => {
-			// 	res.json({ message: err});
-			// });
 });
 
 

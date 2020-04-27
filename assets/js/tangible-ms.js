@@ -35,6 +35,7 @@ window.onload = function(){
 		var canvas = document.getElementsByTagName("canvas")[0];
 	 	var ROWS = 8;
 	 	var COLS = 8;
+	 	var user = prompt("UserName: ");
 	 	// end/ROWS allows for about a space width of 44 either side
 	 	var start = Math.floor(Number(Math.floor(canvas.height)) / (ROWS*2))
 	 	var end = Number(Math.floor(canvas.height));
@@ -51,11 +52,13 @@ window.onload = function(){
 
 
 	 	var playerStats = {
-	 				   name: "",
+	 				   playerName: user,
+	 				   minesweeperVersion: 1,
 	 				   movesMade: 0,
 					   timeTaken: 0, 
-					   currentMoveDuration: 0, 
-					   mines: 0, 
+					   averageMoveDuration: 0, 
+					   totalMines: 0,
+					   progressionPercentage: 0, 
 					   flags: 0, 
 					   flagsUsed: 0,
 					  };
@@ -170,8 +173,8 @@ window.onload = function(){
 
 
 		function viewGameProgression(){
-			var clearPercentage = Math.floor((playerStats.movesMade)/(ROWS+COLS -playerStats.mineCount));
-			console.log(clearPercentage);
+			var clearPercentage = Math.floor((playerStats.movesMade)/(ROWS+COLS -playerStats.totalMines));
+			return(clearPercentage);
 
 		}
 
@@ -246,7 +249,7 @@ window.onload = function(){
 				}
 			}
 
-			playerStats.mines = mineCount;
+			playerStats.totalMines = mineCount;
 			playerStats.flags = mineCount;
 	 	}
 
@@ -255,15 +258,14 @@ window.onload = function(){
 		}
 
 		function sendUserMetrics(){
-			var xmlhttp = new XMLHttpRequest(); 
-			xmlhttp.onreadystatechange = function(){
-				if(this.readyState== 4 && this.status == 200){
-					alert("Sending User Metrics..");
-				}
-			};
-			xmlhttp.open("POST", "http://localhost:3000");
-			xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-			xmlhttp.send(JSON.stringify(playerStats));
+			var userMetricData = JSON.stringify(playerStats);
+			alert(userMetricData);
+			var xhttp = new XMLHttpRequest();
+			xhttp.open("POST", '/stage1', true);
+			xhttp.setRequestHeader('Content-Type', 'application/json;charset=UTF-8')
+			xhttp.send(userMetricData);
+			alert("Data sent to server..");
+
 		}
 
 		function identifyNeighbours(x_max,y_max){
@@ -379,7 +381,7 @@ window.onload = function(){
 					for (var i = 0; i < spaces.length; i++) {
 						var myCircle = drawCircle(i,35,'orange');
 					}
-					storeUserMetrics();
+					sendUserMetrics();
 				} else{
 					alert("You're ok, please continue!")
 					var myCircle = drawCircle(index,35,'grey');

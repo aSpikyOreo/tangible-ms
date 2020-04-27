@@ -14,7 +14,7 @@ const MetricSchema = mongoose.Schema({
 		required: true
 	},
 	minesweeperVersion: {
-		type: String, 
+		type: Number, 
 		required: true
 	},
 	movesMade: {
@@ -29,7 +29,15 @@ const MetricSchema = mongoose.Schema({
 		type: Number, 
 		required: true
 	},
+	totalMines: {
+		type: Number, 
+		required: true
+	},
 	progressionPercentage: {
+		type: Number, 
+		required: true
+	},
+	flags: {
 		type: Number, 
 		required: true
 	},
