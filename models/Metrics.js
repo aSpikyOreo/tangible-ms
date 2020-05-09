@@ -45,6 +45,10 @@ const MetricSchema = mongoose.Schema({
 		type: Number, 
 		required: true
 	},
+	regionLocationsPerSecond: {
+		type: [Object],
+		required: true
+	},
 
 });
 

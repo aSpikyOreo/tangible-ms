@@ -24,10 +24,18 @@ app.get("/", function(req,res){
 });
 
 
+//ROUTES
+app.post("/", function(req,res){
+	res.redirect('/stage1');
+	// load  welcome page
+});
+
+
+
 app.get('/:minesweeperMode', function(req,res){
 	var msMode = req.params.minesweeperMode;
 	if(msMode === "stage1") res.sendFile(path.join(__dirname,'public','tangible-ms.html'));
-	// else if(msMode === "stage2") res.send("Start part 2 of study");
+	else if(msMode === "stage2") res.sendFile(path.join(__dirname,'public','tangible-ms-b.html'));
 	else res.send("Invalid location");
 }); 
 
@@ -47,7 +55,8 @@ app.post('/:minesweeperMode', async function(req,res){
 		totalMines: req.body.totalMines,
 		progressionPercentage: req.body.progressionPercentage,
 		flags: req.body.flags,
-		flagsUsed: req.body.flagsUsed
+		flagsUsed: req.body.flagsUsed,
+		regionLocationsPerSecond: req.body.regionLocationsPerSecond,
 	});
 
 	try{
