@@ -45,7 +45,6 @@ window.onload = function(){
 	 	console.log(start,end,stepH, stepW);
 	 	var n = 0;
 	 	var isGameOver = false;
-	 	var positionTracker = {pos_x: 0, pos_y: 0};
 
 
 	 	// only one unsuccessful move can be made so:
@@ -70,8 +69,11 @@ window.onload = function(){
 		init();
 		identifyNeighbours(ROWS,COLS);
 
-		var positionTimer = setInterval(trackPositionPerSecond, 1000);
+		var gameTimer = setInterval(function(){
+		trackPositionPerSecond()
+		}, 1000);
 
+		if(playerStats.timeTaken === 90) isGameOver = true;
 
 		// var timeExpired = setTimeout(function(){
 		// 	isGameOver = true;
@@ -80,11 +82,10 @@ window.onload = function(){
 		viewPositionMetrics();
 
 		function getMousePosition(){
+			var res = {pos_x: 0, pos_y: 0};
 			$("canvas").mousemove(function(event){
 				var canvasOffsetX = $(this).position().left;
 				var canvasOffsetY = $(this).position().top;
-
-
 
 				var posX = Math.floor(event.pageX - canvasOffsetX);
 				var posY = Math.floor(event.pageY - canvasOffsetY);
@@ -92,65 +93,48 @@ window.onload = function(){
 				//TODO: every 0.5 - 1.0s, push this into a data structure to prep for time-series graph
 				//NOTE: here would be a potentially good location to add plotly functionality 
 				// console.log(posX, posY);
-				positionTracker.pos_x = posX;
-				positionTracker.pos_y = posY;
-				// console.log(res, canvasOffsetX, canvasOffsetY);
+				res.push([posX, posY]);
 
 			});
+			return res;
 		}
 
 
 		function trackPositionPerSecond(){
-			if(!isGameOver){
-				getMousePosition();
-				// console.log(positionTracker);
-				var posX = positionTracker.pos_x;
-				var posY = positionTracker.pos_y;
-				var idx = getSpaceIndex(posX,posY);
-				var region = identifyBoardRegion(idx);
-				// console.log(posX, posY, idx, region);
-				var currentPositionMetrics = {region: region, positionX: posX, positionY: posY};
-				playerStats.timeTaken++;
-				$(".ms-timer").text(playerStats.timeTaken);
-				if(playerStats.timeTaken >= 10){
-					isGameOver = true;
-					$(".ms-timer").css("color","red")
-
-				}
-				timeExpired();
-				//console.log(playerStats.timeTaken);
-				playerStats.regionLocationsPerSecond.push(currentPositionMetrics);
-			}
+			var pos = getMousePosition();
+			var posX = pos[0];
+			var posY = pos[1];
+			var idx = getSpaceIndex(posX,posY);
+			var region = identifyBoardRegion(idx);
+			console.log(pos,posX, posY, idx, region);
+			var currentPositionMetrics = {region: region, positionX: posX, positionY: posY};
+			playerStats.timeTaken++;
+			playerStats.regionLocationsPerSecond.push(currentPositionMetrics);
 		}
 
 		function viewPositionMetrics(){
-				$("canvas").mousedown(function(event){
-					var canvasOffsetX = $(this).position().left;
-					var canvasOffsetY = $(this).position().top;
+			$("canvas").mousedown(function(event){
+				var canvasOffsetX = $(this).position().left;
+				var canvasOffsetY = $(this).position().top;
 
-					var clickedX = Math.floor(event.pageX - canvasOffsetX);
-					var clickedY = Math.floor(event.pageY - canvasOffsetY);
-					console.log(clickedX, clickedY);
-					switch (event.which){
-						case 1: 
-							//co-ords from click listener are able to progress the game
-							if(!isGameOver){
-								startRound(clickedX, clickedY); 
-							}
-							break;
+				var clickedX = Math.floor(event.pageX - canvasOffsetX);
+				var clickedY = Math.floor(event.pageY - canvasOffsetY);
+				console.log(clickedX, clickedY);
+				switch (event.which){
+					case 1: 
+						//co-ords from click listener are able to progress the game
+						startRound(clickedX, clickedY); 
+						break;
 
 
-						case 3: 
-							if(!isGameOver){
-								placeFlag(clickedX, clickedY);
-								
-							}
-							break;
+					case 3: 
+						placeFlag(clickedX, clickedY);
+						break;
 
-						default:
-							alert("error, something seems to be wrong..");
-					}
-				});
+					default:
+						alert("error, something seems to be wrong..");
+				}
+			});
 		}
 
 		// recursively removes all spaces that have no mines adjacent to them
@@ -423,7 +407,7 @@ window.onload = function(){
 	 		if(!spaces[index].clicked){
 	 			spaces[index].clicked = true;
 				playerStats.movesMade++;
-				var completed = viewGameProgression();
+				var completed = viewGameProgression()
 				playerStats.progressionPercentage = completed;
 				if(spaces[index].holdsMine){
 					alert("Game Over");
@@ -432,6 +416,18 @@ window.onload = function(){
 					}
 					sendUserMetrics();
 				} 
+
+
+				else if(isGameOver){
+					alert("Time expired!");
+					for (var i = 0; i < spaces.length; i++) {
+						var myCircle = drawCircle(i,35,'orange');
+					}
+					sendUserMetrics();
+
+				}
+
+
 
 				else if(completed === 100){
 					alert("You Win!");
@@ -454,19 +450,15 @@ window.onload = function(){
 	 	}
 
 
-	 	function timeExpired(){
-	 		if(isGameOver){
-				alert("Time expired!");
-				for (var i = 0; i < spaces.length; i++) {
-					var myCircle = drawCircle(i,35,'orange');
-				}
-				sendUserMetrics();
-
-			}
-	 	}
-
 	 	function drawCircle(idx, size, col){
 			var c = new Path.Circle(new Point(spaces[idx].pos_x,(spaces[idx].pos_y)),size).fillColor = col;
 			return c;
 		}
+		// $("canvas").mousemove(function(e){
+		// 	var clickedX = event.pageX;
+		// 	var clickedY = event.pageY;
+		// 	var idx = getSpaceIndex(clickedX, clickedY);
+		// 	console.log(event.pageX, event.pageY);
+		// 	console.log(spaces[idx]);
+
 	}
