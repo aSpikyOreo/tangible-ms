@@ -41,18 +41,16 @@ window.onload = function(){
 	 	var end = Number(Math.floor(canvas.height)) - start;
 	 	var stepH = Number(Math.floor((1/(COLS)) * end));
 	 	var stepW = Number(Math.floor((1/(ROWS)) * end));
+	 	var circleSize = Math.floor(0.5*stepH);
+	 	var squareSize = Math.floor(0.6*circleSize);
+	 	var scratchSize = Math.floor(0.1*circleSize);
 	 	var spaces = new Array();
 	 	console.log(start,end,stepH, stepW);
 	 	var n = 0;
 	 	var isGameOver = false;
 	 	var positionTracker = {pos_x: 0, pos_y: 0};
 
-
-	 	// only one unsuccessful move can be made so:
-	 		// if player fails: (n-1) / (ROWS*COLS - mineCount) 
-	 		// if player succeeds: 100% and time 
-
-
+	 	// Player object structure that gets sent as a JSON to the MongoDB Cloud. 
 	 	var playerStats = {
 	 				   playerName: user,
 	 				   minesweeperVersion: 2,
@@ -75,7 +73,7 @@ window.onload = function(){
 		var scratch = setInterval(scratchOff, 20);
 
 		//ensures that scratching mechanic only takes place within the circle. 
-		//uses pythagoras
+		//uses pythagoras to calculate the distance between cursor and circle center. 
 		function distFromCircleCenter(cursorX, cursorY,idx){
 			var x_diff = (cursorX - spaces[idx].pos_x)**2;
 			var y_diff = (cursorY - spaces[idx].pos_y)**2;
@@ -83,6 +81,8 @@ window.onload = function(){
 
 		}
 
+
+		//Tangible-like scratching mechanic performed by mousemove listener. 
 		function scratchOff(){
 			getMousePosition();
 			var idx = getSpaceIndex(positionTracker.pos_x, positionTracker.pos_y);
@@ -91,18 +91,22 @@ window.onload = function(){
 
 				$("canvas").mousemove(function(event){
 					var magnitude = distFromCircleCenter(positionTracker.pos_x, positionTracker.pos_y,idx);
-					if(magnitude < 35){
-						var scratchPath = new Path.Circle(new Point(positionTracker.pos_x, positionTracker.pos_y),5).fillColor = 'grey';
-						var text = new PointText(new Point(spaces[index].pos_x,(spaces[index].pos_y)));
+					if(magnitude < circleSize){
+						var scratchPath = new Path.Circle(new Point(positionTracker.pos_x, positionTracker.pos_y),scratchSize).fillColor = 'grey';
+						var neighbourCol = setNeighbourColor(spaces[idx].adjacentNeighbours);
+						if(neighbourCol != "None"){
+							var squareIcon = new Rectangle(new Point(spaces[idx].pos_x-scratchSize,(spaces[idx].pos_y-scratchSize)),
+												   		   new Size(squareSize,squareSize));
+							var cornerSize = new Size(6,6);
+							var squareShape = new Shape.Rectangle(squareIcon, cornerSize);
+							squareShape.fillColor = neighbourCol;
+							squareShape.strokeColor = 'grey';
+						}
 					}
-					// scratchPath.add(event.point);
-					// scratchPath.add(event.point);
+
 
 				});
 
-				// $("canvas").mousemove(function(event){
-				// 	scratchPath.add(event.point);
-				// });
 				}
 			}
 		}
@@ -110,6 +114,7 @@ window.onload = function(){
 
 		viewPositionMetrics();
 
+		// standalone cursor co-ordinates listener using the mousemove Jquery listener.
 		function getMousePosition(){
 			$("canvas").mousemove(function(event){
 				var canvasOffsetX = $(this).position().left;
@@ -130,7 +135,8 @@ window.onload = function(){
 			});
 		}
 
-
+		// User metric used to track the position of the cursor each second. 
+		// stores the region and co-ordinates inparticular in an object. 
 		function trackPositionPerSecond(){
 			if(!isGameOver){
 				getMousePosition();
@@ -154,6 +160,10 @@ window.onload = function(){
 			}
 		}
 
+		// Listener that waits for a click to take place. This also either starts a round or places a flag
+		// given the type of click that takes place. 
+
+		// 1 represents a left click and 3 represents a right click respectively. 
 		function viewPositionMetrics(){
 				$("canvas").mousedown(function(event){
 					var canvasOffsetX = $(this).position().left;
@@ -184,12 +194,9 @@ window.onload = function(){
 				});
 		}
 
-		// recursively removes all spaces that have no mines adjacent to them
-		
-		// when adjacentNeighbours is 0, recursively check all neighbours' adjacentNeighbour values
 
-		// if so, repeat again, else stop.
 
+		// Expressive user metric used to identify the trend of the user's mouse habits. 
 		function identifyBoardRegion(index){
 			traversalIndex = index % COLS;
 
@@ -228,7 +235,7 @@ window.onload = function(){
 	 		}
 
 		}
-
+		// places a flag on a particular point given a set of co-ords 
 		function placeFlag(posX, posY){
 			var idx = getSpaceIndex(posX, posY);
 			identifyBoardRegion(idx);
@@ -247,14 +254,18 @@ window.onload = function(){
 			
 		}
 
+		// returns the metric of a user's current progression in Minesweeper.
 
+		// only one unsuccessful move can be made so:
+ 		// if player fails: (n-1) / (ROWS*COLS - mineCount) 
+ 		// if player succeeds: 100% and time 
 		function viewGameProgression(){
 			var clearPercentage = Math.floor((playerStats.movesMade)/(ROWS*COLS -playerStats.totalMines) *100);
 			console.log(playerStats.movesMade, clearPercentage)
 			return(clearPercentage);
 
 		}
-
+		// starts the process of a round given a set of user co-ordinates
 		function startRound(posX, posY){
 			// Grabs co-ordinates from canvas
 			var idx = getSpaceIndex(posX, posY);
@@ -263,17 +274,19 @@ window.onload = function(){
 		}
 
 
-
+		// randomly assigns a mine using a random number generator. 
 		function assignMine(){
 	 		var rand_num = Math.floor(Math.random() * 20);
-	 		if(rand_num >= 17) {
+	 		if(rand_num >= 16) {
 	 			return true;
 	 		} else{
 	 			return false;
 	 		}
 	 	}
-	 	// idx * stepH + start + 35 = val
-	 	// val - 35 - start / stepH = idx
+	 	// idx * stepH + start + circleSize = val
+	 	// val - circleSize - start / stepH = idx
+
+	 	// identifies a space's index for usage with the spaces object given a set of coords
 	 	function getSpaceIndex(posX,posY){
 	 		var remX = Math.floor((posX - start)/stepW);
 	 		var remY = Math.floor((posY - start)/stepH);
@@ -282,6 +295,7 @@ window.onload = function(){
 	 		return index;
 	 	}
 
+	 	// randomly generates a colour given the position of a circle. 
 	 	function randomColorGenerator(posX, posY){
 	 		var variant = Math.floor(Math.random() * 256);
 			var r = (posX + variant)  % 256; 
@@ -291,6 +305,7 @@ window.onload = function(){
 
 	 	}
 
+	 	// inverts a given colour in RGB format
 	 	function getInvertedColors(col){
 	 		var cols = col.split("");
 	 		var r_new = 255 - cols[4];
@@ -300,16 +315,17 @@ window.onload = function(){
 
 
 	 	}
-
+	 	// draws the physical board on the PaperJS canvas
+	 	// builds core grid objects that are referenced throughout gameplay
 	 	function buildBoard(){
 	 		var mineCount = 0;
 	 		for (var i = 0; i < ROWS; i+=1) {
 				for (var j = 0; j < COLS; j+=1) {
-					var x_shift = start + i*stepW;
-					var y_shift = start + j*stepH;
+					var x_shift = Math.floor(0.5*start) + i*stepW;
+					var y_shift = Math.floor(0.5*start) + j*stepH;
 					var circleCol = randomColorGenerator(x_shift,y_shift);
 					var invertedCol = getInvertedColors(circleCol);
-					var myCircle = new Path.Circle(new Point(x_shift+35,y_shift+35),35).fillColor = circleCol;
+					var myCircle = new Path.Circle(new Point(x_shift+circleSize,y_shift+circleSize),circleSize).fillColor = circleCol;
 					//initialise space object
 
 
@@ -317,6 +333,7 @@ window.onload = function(){
 									index: n, 
 									color: circleCol,
 									outline: invertedCol,
+									circleRef: myCircle,
 									pos_x: 0, pos_y: 0, 
 									holdsMine: 0, 
 									adjacentNeighbours: 0, 
@@ -325,8 +342,8 @@ window.onload = function(){
 									neighbourIndexList: []
 									};
 
-					spaceObj.pos_x = x_shift+35;
-					spaceObj.pos_y = y_shift+35;
+					spaceObj.pos_x = x_shift+circleSize;
+					spaceObj.pos_y = y_shift+circleSize;
 					spaceObj.holdsMine = assignMine();
 
 					if(spaceObj.holdsMine){
@@ -346,6 +363,7 @@ window.onload = function(){
 	 		buildBoard();
 		}
 
+		//sends a JSON of in-game user metrics to the MongoDB cloud atlas
 		function sendUserMetrics(){
 			var userMetricData = JSON.stringify(playerStats);
 			alert(userMetricData);
@@ -357,6 +375,9 @@ window.onload = function(){
 
 		}
 
+
+		// performs the preprocessing that identifies the number of adjacent mines 
+		// each space is next to for the entire board. 
 		function identifyNeighbours(x_max,y_max){
 	 		var traversalIndex = 0;
 
@@ -463,6 +484,53 @@ window.onload = function(){
 	 		}
 	 	}
 
+	 	function setNeighbourColor(neighbouringMines){
+	 		var col = "None";
+	 		switch (neighbouringMines){
+
+	 			case 0: 
+
+					break;
+
+				case 1: 
+					col = "rgb(17,59,8)";
+					break;
+
+				case 2: 
+					col = "rgb(0,200,90)";
+					break;
+
+				case 3: 
+					col = "rgb(50,205,50)";
+					break;
+
+				case 4: 
+					col = "rgb(252,244,163)";
+					break;
+
+				case 5: 
+					col = "rgb(255,255,0)";
+					break;
+
+				case 6: 
+					col = "rgb(255,128,0)";
+					break;
+
+				case 7: 
+					col = "rgb(205,92,92)";
+					break;
+
+				case 8: 
+					col = "rgb(181,0,17)";
+					break;
+
+				default:
+					alert("error, something seems to be wrong with the color setting...");
+			}
+			return col;
+
+	 	}
+	 	//determines the outcome of a move when the user clicks a space
 	 	function determineOutcome(index){
 	 		if(!spaces[index].clicked){
 	 			spaces[index].clicked = true;
@@ -472,7 +540,7 @@ window.onload = function(){
 				if(spaces[index].holdsMine){
 					alert("Game Over");
 					for (var i = 0; i < spaces.length; i++) {
-						var myCircle = drawCircle(i,35,'orange');
+						var myCircle = drawCircle(i,circleSize,'orange');
 					}
 					isGameOver = true;
 					playerStats.averageMoveDuration = (playerStats.timeTaken/playerStats.movesMade);
@@ -482,7 +550,7 @@ window.onload = function(){
 				else if(completed === 100){
 					alert("You Win!");
 					for (var i = 0; i < spaces.length; i++) {
-						var myCircle = drawCircle(i,35,'green');
+						var myCircle = drawCircle(i,circleSize,'green');
 					}
 					isGameOver = true;
 					playerStats.averageMoveDuration = (playerStats.timeTaken/playerStats.movesMade);
@@ -492,35 +560,49 @@ window.onload = function(){
 				else{
 					alert("You're ok, please continue!");
 					console.log(spaces[index].invertedCol);
-					var unconveredSpace = drawCircleOutline(index,35,spaces[index].outline);
-					// var myCircle = drawCircle(index,35,'grey');
-					var text = new PointText(new Point(spaces[index].pos_x,(spaces[index].pos_y)));
-					text.justification = 'center';
-					text.fillColor = 'black';
-					text.content = spaces[index].adjacentNeighbours;
+					var uncoveredSpace = drawCircleOutline(index,circleSize,spaces[index].outline);
+					// var myCircle = drawCircle(index,circleSize,'grey');
+					var squareIcon = new Rectangle(new Point(spaces[index].pos_x-scratchSize,(spaces[index].pos_y-scratchSize)),
+												   new Size(squareSize,squareSize));
+
+					var neighbourCol = setNeighbourColor(spaces[index].adjacentNeighbours);
+					if(neighbourCol != "None"){
+						var cornerSize = new Size(6,6);
+						var squareShape = new Shape.Rectangle(squareIcon, cornerSize);
+						squareShape.fillColor = neighbourCol;
+						squareShape.strokeColor = 'grey';
+					}
+
+					// squareShape.insertAbove(uncoveredSpace);
+
+					// var text = new PointText(new Point(spaces[index].pos_x,(spaces[index].pos_y)));
+					// text.justification = 'center';
+					// text.fillColor = 'black';
+					// text.content = spaces[index].adjacentNeighbours;
 
 				}
 			}
 	 	}
 
-
+	 	//Ends the game if the time taken to play a game has exceed a particular time limit
 	 	function timeExpired(){
 	 		if(isGameOver){
 				alert("Time expired!");
 				for (var i = 0; i < spaces.length; i++) {
-					var myCircle = drawCircle(i,35,'orange');
+					var myCircle = drawCircle(i,circleSize,'orange');
 				}
 				playerStats.averageMoveDuration = (playerStats.timeTaken/playerStats.movesMade);
 				sendUserMetrics();
 
 			}
 	 	}
-
+	 	// easy drawing function for readability purposes
 	 	function drawCircle(idx, size, col){
 			var c = new Path.Circle(new Point(spaces[idx].pos_x,(spaces[idx].pos_y)),size).fillColor = col;
 			return c;
 		}
 
+		// draws the outline that illustrates that a space has been previously clicked. 
 		function drawCircleOutline(idx, size, col){
 			var c = new Path.Circle(new Point(spaces[idx].pos_x, (spaces[idx].pos_y)),size).strokeColor =col;
 			var c = new Path.Circle(new Point(spaces[idx].pos_x, (spaces[idx].pos_y)),size+2).strokeColor =col;
