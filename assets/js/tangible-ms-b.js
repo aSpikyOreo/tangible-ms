@@ -45,6 +45,7 @@ window.onload = function(){
 	 	console.log(start,end,stepH, stepW);
 	 	var n = 0;
 	 	var isGameOver = false;
+	 	var positionTracker = {pos_x: 0, pos_y: 0};
 
 
 	 	// only one unsuccessful move can be made so:
@@ -54,7 +55,7 @@ window.onload = function(){
 
 	 	var playerStats = {
 	 				   playerName: user,
-	 				   minesweeperVersion: 1,
+	 				   minesweeperVersion: 2,
 	 				   movesMade: 0,
 					   timeTaken: 0, 
 					   averageMoveDuration: 0, 
@@ -69,23 +70,52 @@ window.onload = function(){
 		init();
 		identifyNeighbours(ROWS,COLS);
 
-		var gameTimer = setInterval(function(){
-		trackPositionPerSecond()
-		}, 1000);
+		var positionTimer = setInterval(trackPositionPerSecond, 1000);
 
-		if(playerStats.timeTaken === 90) isGameOver = true;
+		var scratch = setInterval(scratchOff, 20);
 
-		// var timeExpired = setTimeout(function(){
-		// 	isGameOver = true;
-		// }, 90000);
+		//ensures that scratching mechanic only takes place within the circle. 
+		//uses pythagoras
+		function distFromCircleCenter(cursorX, cursorY,idx){
+			var x_diff = (cursorX - spaces[idx].pos_x)**2;
+			var y_diff = (cursorY - spaces[idx].pos_y)**2;
+			return ( Math.ceil(Math.sqrt(x_diff + y_diff)) );
+
+		}
+
+		function scratchOff(){
+			getMousePosition();
+			var idx = getSpaceIndex(positionTracker.pos_x, positionTracker.pos_y);
+			if(spaces[idx] != undefined){
+				if(spaces[idx].clicked){
+
+				$("canvas").mousemove(function(event){
+					var magnitude = distFromCircleCenter(positionTracker.pos_x, positionTracker.pos_y,idx);
+					if(magnitude < 35){
+						var scratchPath = new Path.Circle(new Point(positionTracker.pos_x, positionTracker.pos_y),5).fillColor = 'grey';
+						var text = new PointText(new Point(spaces[index].pos_x,(spaces[index].pos_y)));
+					}
+					// scratchPath.add(event.point);
+					// scratchPath.add(event.point);
+
+				});
+
+				// $("canvas").mousemove(function(event){
+				// 	scratchPath.add(event.point);
+				// });
+				}
+			}
+		}
+
 
 		viewPositionMetrics();
 
 		function getMousePosition(){
-			var res = {pos_x: 0, pos_y: 0};
 			$("canvas").mousemove(function(event){
 				var canvasOffsetX = $(this).position().left;
 				var canvasOffsetY = $(this).position().top;
+
+
 
 				var posX = Math.floor(event.pageX - canvasOffsetX);
 				var posY = Math.floor(event.pageY - canvasOffsetY);
@@ -93,48 +123,65 @@ window.onload = function(){
 				//TODO: every 0.5 - 1.0s, push this into a data structure to prep for time-series graph
 				//NOTE: here would be a potentially good location to add plotly functionality 
 				// console.log(posX, posY);
-				res.push([posX, posY]);
+				positionTracker.pos_x = posX;
+				positionTracker.pos_y = posY;
+				// console.log(res, canvasOffsetX, canvasOffsetY);
 
 			});
-			return res;
 		}
 
 
 		function trackPositionPerSecond(){
-			var pos = getMousePosition();
-			var posX = pos[0];
-			var posY = pos[1];
-			var idx = getSpaceIndex(posX,posY);
-			var region = identifyBoardRegion(idx);
-			console.log(pos,posX, posY, idx, region);
-			var currentPositionMetrics = {region: region, positionX: posX, positionY: posY};
-			playerStats.timeTaken++;
-			playerStats.regionLocationsPerSecond.push(currentPositionMetrics);
+			if(!isGameOver){
+				getMousePosition();
+				// console.log(positionTracker);
+				var posX = positionTracker.pos_x;
+				var posY = positionTracker.pos_y;
+				var idx = getSpaceIndex(posX,posY);
+				var region = identifyBoardRegion(idx);
+				// console.log(posX, posY, idx, region);
+				var currentPositionMetrics = {region: region, positionX: posX, positionY: posY};
+				playerStats.timeTaken++;
+				$(".ms-timer").text(playerStats.timeTaken);
+				if(playerStats.timeTaken >= 180){
+					isGameOver = true;
+					$(".ms-timer").css("color","red")
+
+				}
+				timeExpired();
+				//console.log(playerStats.timeTaken);
+				playerStats.regionLocationsPerSecond.push(currentPositionMetrics);
+			}
 		}
 
 		function viewPositionMetrics(){
-			$("canvas").mousedown(function(event){
-				var canvasOffsetX = $(this).position().left;
-				var canvasOffsetY = $(this).position().top;
+				$("canvas").mousedown(function(event){
+					var canvasOffsetX = $(this).position().left;
+					var canvasOffsetY = $(this).position().top;
 
-				var clickedX = Math.floor(event.pageX - canvasOffsetX);
-				var clickedY = Math.floor(event.pageY - canvasOffsetY);
-				console.log(clickedX, clickedY);
-				switch (event.which){
-					case 1: 
-						//co-ords from click listener are able to progress the game
-						startRound(clickedX, clickedY); 
-						break;
+					var clickedX = Math.floor(event.pageX - canvasOffsetX);
+					var clickedY = Math.floor(event.pageY - canvasOffsetY);
+					console.log(clickedX, clickedY);
+					switch (event.which){
+						case 1: 
+							//co-ords from click listener are able to progress the game
+							if(!isGameOver){
+								startRound(clickedX, clickedY); 
+							}
+							break;
 
 
-					case 3: 
-						placeFlag(clickedX, clickedY);
-						break;
+						case 3: 
+							if(!isGameOver){
+								placeFlag(clickedX, clickedY);
+								
+							}
+							break;
 
-					default:
-						alert("error, something seems to be wrong..");
-				}
-			});
+						default:
+							alert("error, something seems to be wrong..");
+					}
+				});
 		}
 
 		// recursively removes all spaces that have no mines adjacent to them
@@ -202,8 +249,9 @@ window.onload = function(){
 
 
 		function viewGameProgression(){
-			var clearPercentage = Math.floor((playerStats.movesMade)/(ROWS*COLS -playerStats.totalMines));
-			return(clearPercentage*100);
+			var clearPercentage = Math.floor((playerStats.movesMade)/(ROWS*COLS -playerStats.totalMines) *100);
+			console.log(playerStats.movesMade, clearPercentage)
+			return(clearPercentage);
 
 		}
 
@@ -243,6 +291,16 @@ window.onload = function(){
 
 	 	}
 
+	 	function getInvertedColors(col){
+	 		var cols = col.split("");
+	 		var r_new = 255 - cols[4];
+	 		var g_new = 255 - cols[6];
+	 		var b_new = 255 - cols[8];
+	 		return "rgb(" + r_new + ", " + g_new + ", " + b_new + ")";
+
+
+	 	}
+
 	 	function buildBoard(){
 	 		var mineCount = 0;
 	 		for (var i = 0; i < ROWS; i+=1) {
@@ -250,6 +308,7 @@ window.onload = function(){
 					var x_shift = start + i*stepW;
 					var y_shift = start + j*stepH;
 					var circleCol = randomColorGenerator(x_shift,y_shift);
+					var invertedCol = getInvertedColors(circleCol);
 					var myCircle = new Path.Circle(new Point(x_shift+35,y_shift+35),35).fillColor = circleCol;
 					//initialise space object
 
@@ -257,6 +316,7 @@ window.onload = function(){
 					var spaceObj = {
 									index: n, 
 									color: circleCol,
+									outline: invertedCol,
 									pos_x: 0, pos_y: 0, 
 									holdsMine: 0, 
 									adjacentNeighbours: 0, 
@@ -290,7 +350,7 @@ window.onload = function(){
 			var userMetricData = JSON.stringify(playerStats);
 			alert(userMetricData);
 			var xhttp = new XMLHttpRequest();
-			xhttp.open("POST", '/stage1', true);
+			xhttp.open("POST", '/sendMetrics', true);
 			xhttp.setRequestHeader('Content-Type', 'application/json;charset=UTF-8')
 			xhttp.send(userMetricData);
 			alert("Data sent to server..");
@@ -407,39 +467,33 @@ window.onload = function(){
 	 		if(!spaces[index].clicked){
 	 			spaces[index].clicked = true;
 				playerStats.movesMade++;
-				var completed = viewGameProgression()
+				var completed = viewGameProgression();
 				playerStats.progressionPercentage = completed;
 				if(spaces[index].holdsMine){
 					alert("Game Over");
 					for (var i = 0; i < spaces.length; i++) {
 						var myCircle = drawCircle(i,35,'orange');
 					}
+					isGameOver = true;
+					playerStats.averageMoveDuration = (playerStats.timeTaken/playerStats.movesMade);
 					sendUserMetrics();
 				} 
-
-
-				else if(isGameOver){
-					alert("Time expired!");
-					for (var i = 0; i < spaces.length; i++) {
-						var myCircle = drawCircle(i,35,'orange');
-					}
-					sendUserMetrics();
-
-				}
-
-
 
 				else if(completed === 100){
 					alert("You Win!");
 					for (var i = 0; i < spaces.length; i++) {
 						var myCircle = drawCircle(i,35,'green');
 					}
+					isGameOver = true;
+					playerStats.averageMoveDuration = (playerStats.timeTaken/playerStats.movesMade);
 					sendUserMetrics();
 				}
 
 				else{
-					alert("You're ok, please continue!")
-					var myCircle = drawCircle(index,35,'grey');
+					alert("You're ok, please continue!");
+					console.log(spaces[index].invertedCol);
+					var unconveredSpace = drawCircleOutline(index,35,spaces[index].outline);
+					// var myCircle = drawCircle(index,35,'grey');
 					var text = new PointText(new Point(spaces[index].pos_x,(spaces[index].pos_y)));
 					text.justification = 'center';
 					text.fillColor = 'black';
@@ -450,15 +504,27 @@ window.onload = function(){
 	 	}
 
 
+	 	function timeExpired(){
+	 		if(isGameOver){
+				alert("Time expired!");
+				for (var i = 0; i < spaces.length; i++) {
+					var myCircle = drawCircle(i,35,'orange');
+				}
+				playerStats.averageMoveDuration = (playerStats.timeTaken/playerStats.movesMade);
+				sendUserMetrics();
+
+			}
+	 	}
+
 	 	function drawCircle(idx, size, col){
 			var c = new Path.Circle(new Point(spaces[idx].pos_x,(spaces[idx].pos_y)),size).fillColor = col;
 			return c;
 		}
-		// $("canvas").mousemove(function(e){
-		// 	var clickedX = event.pageX;
-		// 	var clickedY = event.pageY;
-		// 	var idx = getSpaceIndex(clickedX, clickedY);
-		// 	console.log(event.pageX, event.pageY);
-		// 	console.log(spaces[idx]);
 
+		function drawCircleOutline(idx, size, col){
+			var c = new Path.Circle(new Point(spaces[idx].pos_x, (spaces[idx].pos_y)),size).strokeColor =col;
+			var c = new Path.Circle(new Point(spaces[idx].pos_x, (spaces[idx].pos_y)),size+2).strokeColor =col;
+			var c = new Path.Circle(new Point(spaces[idx].pos_x, (spaces[idx].pos_y)),size+4).strokeColor =col;
+			return c;
+		}
 	}

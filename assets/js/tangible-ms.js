@@ -112,7 +112,7 @@ window.onload = function(){
 				var currentPositionMetrics = {region: region, positionX: posX, positionY: posY};
 				playerStats.timeTaken++;
 				$(".ms-timer").text(playerStats.timeTaken);
-				if(playerStats.timeTaken >= 10){
+				if(playerStats.timeTaken >= 1800){
 					isGameOver = true;
 					$(".ms-timer").css("color","red")
 
@@ -218,8 +218,9 @@ window.onload = function(){
 
 
 		function viewGameProgression(){
-			var clearPercentage = Math.floor((playerStats.movesMade)/(ROWS*COLS -playerStats.totalMines));
-			return(clearPercentage*100);
+			var clearPercentage = Math.floor((playerStats.movesMade)/(ROWS*COLS -playerStats.totalMines) *100);
+			console.log(playerStats.movesMade, clearPercentage)
+			return(clearPercentage);
 
 		}
 
@@ -430,6 +431,8 @@ window.onload = function(){
 					for (var i = 0; i < spaces.length; i++) {
 						var myCircle = drawCircle(i,35,'orange');
 					}
+					isGameOver = true;
+					playerStats.averageMoveDuration = (playerStats.timeTaken/playerStats.movesMade);
 					sendUserMetrics();
 				} 
 
@@ -438,6 +441,8 @@ window.onload = function(){
 					for (var i = 0; i < spaces.length; i++) {
 						var myCircle = drawCircle(i,35,'green');
 					}
+					isGameOver = true;
+					playerStats.averageMoveDuration = (playerStats.timeTaken/playerStats.movesMade);
 					sendUserMetrics();
 				}
 
@@ -460,6 +465,7 @@ window.onload = function(){
 				for (var i = 0; i < spaces.length; i++) {
 					var myCircle = drawCircle(i,35,'orange');
 				}
+				playerStats.averageMoveDuration = (playerStats.timeTaken/playerStats.movesMade);
 				sendUserMetrics();
 
 			}
