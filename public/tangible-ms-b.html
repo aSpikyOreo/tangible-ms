@@ -4,33 +4,85 @@
 <head>
 	<meta charset="utf-8"/>
 	<title>Tangible MineSweeper</title>
-	<script type="text/javascript" src="assets/js/lib/paperjs/dist/paper-full.min.js"></script>
+	<script type="text/javascript" src="../assets/js/lib/paperjs/dist/paper-full.min.js"></script>
 	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-	<link rel="stylesheet" type="text/css" href="assets/css/styles.css">
-	<script type="text/javascript" canvas="ms-canvas" src="assets/js/tangible-ms-b.js"></script>
+	<link rel="stylesheet" type="text/css" href="../assets/css/styles.css">
+	<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Antic&display=swap" rel="stylesheet"> 
+	<script type="text/javascript" canvas="ms-canvas" src="../assets/js/tangible-ms-b.js"></script>
 
 	</head>
 	<body>
 
-		<div class="title-text">
-			<nav class="navbar navbar-light bg-light">
-			  <span class="navbar-brand mb-0 h1">Tangible Minesweeper!</span>
-			</nav>
-		</div>
+		<nav class="navbar top-bar">
+		  <span class="navbar-brand mb-0 navbar-text">Tangible Minesweeper: Stage 1</span>
+		</nav>
 
-		<div id="ms-container"class="container-fluid">
-			<div class= "row justify-content-center align-items-center">
-				<canvas id="ms-canvas" resize></canvas>
+		<h1 class="leading-text mt-3">Neighbouring Mine Legend</h1>
+	  	<div class="container mt-5 mb-5 ml-5">
+
+	  		<div class="row justify-content-center mb-5">
+			 	 <div class="ms-key mr-5" style="background-color:grey";>
+			 	 	<p class=legend-label>0</p>
+			 	 </div>
+
+			 	 <div class="ms-key mr-5" style="background-color:rgb(17,59,8)";>
+			 	 	<p class=legend-label>1</p>
+			 	 </div>
+
+			 	 <div class="ms-key mr-5" style="background-color:rgb(0,200,90)";>
+			 	 	<p class=legend-label>2</p>
+			 	 </div>
+			 </div>
+
+			<div class="row justify-content-center mb-5">
+
+			 	 <div class="ms-key mr-5" style="background-color:rgb(50,205,50)";>
+			 	 	<p class=legend-label>3</p>
+			 	 </div>
+
+			 	 <div class="ms-key mr-5" style="background-color:rgb(252,244,163)";>
+			 	 	<p class=legend-label>4</p>
+			 	 </div>
+
+			 	 <div class="ms-key mr-5" style="background-color:rgb(255,255,0)";>
+			 	 	<p class=legend-label>5</p>
+			 	 </div>
+
+			 </div>
+
+
+
+		 	 <div class="row justify-content-center">
+			 	 <div class="ms-key mr-5" style="background-color:rgb(255,128,0)";>
+			 	 	<p class=legend-label>6</p>
+			 	 </div>
+			 	 <div class="ms-key mr-5" style="background-color:rgb(205,92,92)";>
+			 	 	<p class=legend-label>7</p>
+			 	 </div>
+			 	 <div class="ms-key mr-5" style="background-color:rgb(181,0,17)";>
+			 	 	<p class=legend-label>8</p>
+			 	 </div>
+			 	 
+
+				</div>
+			 </div>
+		    </div>
+		  </div>
+
+		<div class= "row justify-content-center">
+			<div class="jumbotron-timer col-1 order-first mt-0 ml-3">
+			  <h1 class="display-4"> <span class='num-label'>Time</span> <span class="ms-timer">0</span></h1>
+			</div>
+
+			<div class="jumbotron-timer col-1 order-last mt-0 mr-3">
+			  <h1 class="display-4"> <span class='num-label'>Flags</span> <span class="ms-flag-count">0</span></h1>
 			</div>
 		</div>
 
-		<div class="ms-footer-metrics jumbotron mt-5">
-		  <div class="row justify-content-center">
-		    <h1 class="display-5">Link to Questionnaires below:</h1>
-		    <button>Questionnaire 1</button>
-		    <button>Questionnaire 2</button>
-		    <button>Questionnaire 3</button>
-		  </div>
+		<div id="ms-container"class="container-fluid mb-5">
+			<div class= "row justify-content-center align-items-center">
+				<canvas id="ms-canvas" resize></canvas>
+			</div>
 		</div>
 
 	<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>

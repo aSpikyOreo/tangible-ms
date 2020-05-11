@@ -26,19 +26,24 @@ app.get("/", function(req,res){
 
 //ROUTES
 app.post("/", function(req,res){
-	res.redirect('/stage1');
+	res.redirect('/stage3');
 	// load  welcome page
 });
 
 
+app.post("/stage3", function(req,res){
+	res.redirect('/stage3/isTangible')
+})
 
-app.get('/:minesweeperMode', function(req,res){
-	var msMode = req.params.minesweeperMode;
-	if(msMode === "stage1") res.sendFile(path.join(__dirname,'public','tangible-ms.html'));
-	else if(msMode === "stage2") res.sendFile(path.join(__dirname,'public','tangible-ms-b.html'));
-	else res.send("Invalid location");
+
+app.get("/stage3", function(req,res){
+	res.sendFile(path.join(__dirname,'public','tangible-ms.html'));
+	// res.send("Invalid location");
 }); 
 
+app.get("/stage3/isTangible", function(req,res){
+	res.sendFile(path.join(__dirname,'public','tangible-ms-b.html'));
+})
 
 
 //POSTING USER METRICS
@@ -67,6 +72,32 @@ app.post('/:minesweeperMode', async function(req,res){
 		res.json({message: err});
 	}   
 });
+
+// app.post('/:minesweeperMode/isTangible', async function(req,res){
+
+// 	const testB = req.body;
+// 	console.log(req.body);
+// 	const userMetrics = new PostMetrics({
+// 		playerName: req.body.playerName,
+// 		minesweeperVersion: req.body.minesweeperVersion,
+// 		movesMade: req.body.movesMade,
+// 		timeTaken: req.body.timeTaken,
+// 		averageMoveDuration: req.body.averageMoveDuration,
+// 		totalMines: req.body.totalMines,
+// 		progressionPercentage: req.body.progressionPercentage,
+// 		flags: req.body.flags,
+// 		flagsUsed: req.body.flagsUsed,
+// 		regionLocationsPerSecond: req.body.regionLocationsPerSecond,
+// 	});
+
+// 	try{
+
+// 	const savedMetrics = await userMetrics.save();
+// 	res.json(savedMetrics);
+// 	}catch(err){
+// 		res.json({message: err});
+// 	}   
+// });
 
 
 
