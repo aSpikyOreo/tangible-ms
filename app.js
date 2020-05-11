@@ -6,8 +6,10 @@ const path = require('path');
 const mongoose = require('mongoose');
 const PostMetrics = require(path.join(__dirname,'models','Metrics'));
 
+
 require('dotenv/config');
 
+var http = require('http')
 var bodyParser = require('body-parser');
 
 
@@ -110,6 +112,6 @@ mongoose.connect(process.env.DB_CONNECTION,
 
 
 
-app.listen(3000, function(){
+app.listen(process.env.PORT, function(){
 		console.log("Starting localhost on PORT 3000: ");
 	});
