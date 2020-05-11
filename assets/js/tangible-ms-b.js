@@ -43,8 +43,9 @@ window.onload = function(){
 	 	var stepW = Number(Math.floor((1/(ROWS)) * end));
 	 	var circleSize = Math.floor(0.5*stepH);
 	 	var squareSize = Math.floor(0.6*circleSize);
-	 	var scratchSize = Math.floor(0.1*circleSize);
+	 	var scratchSize = Math.floor(0.3*circleSize);
 	 	var spaces = new Array();
+	 	var currentSquare;
 	 	console.log(start,end,stepH, stepW);
 	 	var n = 0;
 	 	var isGameOver = false;
@@ -91,17 +92,9 @@ window.onload = function(){
 
 				$("canvas").mousemove(function(event){
 					var magnitude = distFromCircleCenter(positionTracker.pos_x, positionTracker.pos_y,idx);
-					if(magnitude < circleSize){
-						var scratchPath = new Path.Circle(new Point(positionTracker.pos_x, positionTracker.pos_y),scratchSize).fillColor = 'grey';
-						var neighbourCol = setNeighbourColor(spaces[idx].adjacentNeighbours);
-						if(neighbourCol != "None"){
-							var squareIcon = new Rectangle(new Point(spaces[idx].pos_x-scratchSize,(spaces[idx].pos_y-scratchSize)),
-												   		   new Size(squareSize,squareSize));
-							var cornerSize = new Size(6,6);
-							var squareShape = new Shape.Rectangle(squareIcon, cornerSize);
-							squareShape.fillColor = neighbourCol;
-							squareShape.strokeColor = 'grey';
-						}
+					var neighbourCol = setNeighbourColor(spaces[idx].adjacentNeighbours);
+					if(magnitude < Math.ceil(0.5*circleSize)){
+						var scratchPath = new Path.Circle(new Point(positionTracker.pos_x, positionTracker.pos_y),scratchSize).fillColor = neighbourCol;
 					}
 
 
@@ -288,8 +281,8 @@ window.onload = function(){
 
 	 	// identifies a space's index for usage with the spaces object given a set of coords
 	 	function getSpaceIndex(posX,posY){
-	 		var remX = Math.floor((posX - start)/stepW);
-	 		var remY = Math.floor((posY - start)/stepH);
+	 		var remX = Math.floor((posX - Math.floor(0.5*start))/stepW);
+	 		var remY = Math.floor((posY - Math.floor(0.5*start))/stepH);
 
 	 		var index = COLS*remX + remY;
 	 		return index;
@@ -489,7 +482,7 @@ window.onload = function(){
 	 		switch (neighbouringMines){
 
 	 			case 0: 
-
+	 				col = "grey";
 					break;
 
 				case 1: 
@@ -540,7 +533,13 @@ window.onload = function(){
 				if(spaces[index].holdsMine){
 					alert("Game Over");
 					for (var i = 0; i < spaces.length; i++) {
-						var myCircle = drawCircle(i,circleSize,'orange');
+						if(spaces[i].holdsMine){
+							var mineCircle = drawCircle(i,circleSize,'red');
+						}
+						else{
+							var myCircle = drawCircle(i,circleSize,'orange');
+
+						}
 					}
 					isGameOver = true;
 					playerStats.averageMoveDuration = (playerStats.timeTaken/playerStats.movesMade);
@@ -559,25 +558,27 @@ window.onload = function(){
 
 				else{
 					alert("You're ok, please continue!");
-					console.log(spaces[index].invertedCol);
 					var uncoveredSpace = drawCircleOutline(index,circleSize,spaces[index].outline);
-					// var myCircle = drawCircle(index,circleSize,'grey');
-					var squareIcon = new Rectangle(new Point(spaces[index].pos_x-scratchSize,(spaces[index].pos_y-scratchSize)),
-												   new Size(squareSize,squareSize));
 
-					var neighbourCol = setNeighbourColor(spaces[index].adjacentNeighbours);
-					if(neighbourCol != "None"){
-						var cornerSize = new Size(6,6);
-						var squareShape = new Shape.Rectangle(squareIcon, cornerSize);
-						squareShape.fillColor = neighbourCol;
-						squareShape.strokeColor = 'grey';
-					}
+					var myCircle = drawCircle(index,circleSize,'grey');
+					
+					// var squareIcon = new Rectangle(new Point(spaces[index].pos_x,(spaces[index].pos_y)),
+					// 	                           new Size(squareSize,squareSize));
+
+					// var neighbourCol = setNeighbourColor(spaces[index].adjacentNeighbours);
+					// if(neighbourCol != "None"){
+					// 	var cornerSize = new Size(6,6);
+					// 	var squareShape = new Shape.Rectangle(squareIcon, cornerSize);
+					// 	squareShape.fillColor = neighbourCol;
+					// 	squareShape.strokeColor = 'grey';
+					// 	squareShape.opacity = 0;
+					// }
 
 					// squareShape.insertAbove(uncoveredSpace);
 
-					// var text = new PointText(new Point(spaces[index].pos_x,(spaces[index].pos_y)));
-					// text.justification = 'center';
-					// text.fillColor = 'black';
+					var text = new PointText(new Point(spaces[index].pos_x,(spaces[index].pos_y)));
+					text.justification = 'center';
+					text.fillColor = 'white';
 					// text.content = spaces[index].adjacentNeighbours;
 
 				}
@@ -589,7 +590,12 @@ window.onload = function(){
 	 		if(isGameOver){
 				alert("Time expired!");
 				for (var i = 0; i < spaces.length; i++) {
-					var myCircle = drawCircle(i,circleSize,'orange');
+					if(spaces[i].holdsMine){
+							var mineCircle = drawCircle(i,circleSize,'red');
+						}
+						else{
+							var myCircle = drawCircle(i,circleSize,'orange');
+						}
 				}
 				playerStats.averageMoveDuration = (playerStats.timeTaken/playerStats.movesMade);
 				sendUserMetrics();
