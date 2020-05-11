@@ -1,15 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<meta charset="utf-8"/>
+	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+	<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Antic&display=swap" rel="stylesheet"> 
+	<link rel="stylesheet" type="text/css" href="../assets/css/styles.css">
 	<title>Welcome to the site!</title>
 </head>
 <body>
-	<h1>Minesweeper: A Tangible Inspiration</h1>
+	<h1 class="leading-text mt-5">Minesweeper: A Tangible Inspiration</h1>
 
-	<h2>Are you ready for your 2-stage usability study?</h2>
+	<h2 class="leading-text">Please click on the button below to get started.</h2>
+	
+	<div class="row justify-content-center">
+		<div class="jumbotron col-5 mt-0">
+		  <h1 class="info-block">How to Play</h1>
+		  <p class="helper-text"></p>
+		  <hr class="para-split">
+		  <p>Minesweeper is a classic digital game where you have to
+		  	 uncover all the spaces that do not contain a mine. If you select a game with a mine, then the game ends and you lose.</p>
+		  <hr class="para-split">
+		  <p>When you click on a space that doesn't hold a mine, the space will reveal how many mines that particular space is next to. Can you clear all the spaces without touching a mine?</p>
+
+		</div>
+		
+	</div>
+
+	<div class="row justify-content-center">
 	<form action="" method="post">
-	<button name="start" vale="Begin">BEGIN</button>
+	<button name="start" class="btn btn-primary btn-lg btn-block progress-button">BEGIN</button>
 	</form>
+	</div>
 
+
+	<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 </body>
 </html>

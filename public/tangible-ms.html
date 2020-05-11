@@ -7,22 +7,20 @@
 	<script type="text/javascript" src="assets/js/lib/paperjs/dist/paper-full.min.js"></script>
 	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 	<link rel="stylesheet" type="text/css" href="assets/css/styles.css">
+	<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Antic&display=swap" rel="stylesheet"> 
 	<script type="text/javascript" canvas="ms-canvas" src="assets/js/tangible-ms.js"></script>
 
 	</head>
 	<body>
 
-		<div class="title-text">
-			<nav class="navbar navbar-light top-bar">
-			  <span class="navbar-brand mb-0 navbar-text">Tangible Minesweeper!</span>
-			</nav>
-		</div>
+		<nav class="navbar top-bar">
+		  <span class="navbar-brand mb-0 navbar-text">Tangible Minesweeper: Stage 1</span>
+		</nav>
 
 		<div class= "row justify-content-center">
 			<div class="jumbotron-timer col-1 mt-5">
 			  <h1 class="display-4"> <span class="ms-timer">0</span></h1><!-- 
 			  <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.</p> -->
-			  <hr class="my-4">
 			</div>
 		</div>
 
@@ -32,13 +30,12 @@
 			</div>
 		</div>
 
-		<div class="ms-footer-metrics jumbotron mt-5">
-		  <div class="row justify-content-center">
-		    <h1 class="display-5">Link to Questionnaires below:</h1>
-		    <form action="" method="post">
-			<button name="progress" vale="Begin">Continue to Stage 2</button>
-			</form>
-
+		<div class="ms-info-block jumbotron mt-5">
+		    <h1 class="helper-text">Link to Questionnaires below:</h1>
+		    <div class= "row justify-content-center">
+			    <form action="" method="post">
+				<button name="start" class="btn btn-primary progress-button">Continue to Stage 2</button>
+				</form>
 		  </div>
 		</div>
 
