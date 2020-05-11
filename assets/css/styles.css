@@ -34,6 +34,10 @@
 
 }
 
+.num-label{
+	font-size: 20px;
+}
+
 .ms-key-box{
 	background-color: #1e212b;
 }
@@ -86,7 +90,7 @@
 }
 
 
-p{
+ul,li,p{
 	color: white;
 }
 
