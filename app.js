@@ -112,6 +112,6 @@ mongoose.connect(process.env.DB_CONNECTION,
 
 
 
-app.listen(process.env.PORT, function(){
+app.listen((process.env.PORT || 3000), function(){
 		console.log("Starting localhost on PORT 3000: ");
 	});
