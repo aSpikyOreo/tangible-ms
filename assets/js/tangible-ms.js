@@ -307,12 +307,10 @@ window.onload = function(){
 
 		function sendUserMetrics(){
 			var userMetricData = JSON.stringify(playerStats);
-			alert(userMetricData);
 			var xhttp = new XMLHttpRequest();
 			xhttp.open("POST", '/sendMetrics', true);
 			xhttp.setRequestHeader('Content-Type', 'application/json;charset=UTF-8')
 			xhttp.send(userMetricData);
-			alert("Data sent to server..");
 
 		}
 
@@ -457,7 +455,6 @@ window.onload = function(){
 				}
 
 				else{
-					alert("You're ok, please continue!")
 					var myCircle = drawCircle(index,circleSize,'grey');
 					var text = new PointText(new Point(spaces[index].pos_x,(spaces[index].pos_y)));
 					text.justification = 'center';
