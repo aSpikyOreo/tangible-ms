@@ -104,7 +104,7 @@ app.post('/:minesweeperMode', async function(req,res){
 
 
 //CONNECT TO CLOUD DATABASE
-mongoose.connect(process.env.MONGODB_URI || process.env.DB_CONNECTION,
+mongoose.connect(process.env.DB_CONNECTION,
     { useUnifiedTopology: true, useNewUrlParser: true }, () =>
 	console.log("DB connected... Ready for storing..")
 	);
