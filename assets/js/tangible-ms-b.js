@@ -359,10 +359,11 @@ window.onload = function(){
 
 		//sends a JSON of in-game user metrics to the MongoDB cloud atlas
 		function sendUserMetrics(){
+			var url = "https://tangible-ms.herokuapp.com/stage3/isTangible";
 			var userMetricData = JSON.stringify(playerStats);
 			alert(userMetricData);
 			var xhttp = new XMLHttpRequest();
-			xhttp.open("POST", '/sendMetrics', true);
+			xhttp.open("POST", url, true);
 			xhttp.setRequestHeader('Content-Type', 'application/json;charset=UTF-8')
 			xhttp.send(userMetricData);
 			alert("Data sent to server..");

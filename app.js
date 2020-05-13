@@ -12,6 +12,8 @@ require('dotenv/config');
 var http = require('http')
 var bodyParser = require('body-parser');
 
+var urlA = "https://tangible-ms.herokuapp.com/stage3";
+var urlB = "https://tangible-ms.herokuapp.com/stage3/isTangible";
 
 // MIDDLEWARE
 app.use('/assets', express.static('assets'));
@@ -49,7 +51,7 @@ app.get("/stage3/isTangible", function(req,res){
 
 
 //POSTING USER METRICS
-app.post('/:minesweeperMode', async function(req,res){
+app.post(urlA, async function(req,res){
 
 	const testB = req.body;
 	console.log(req.body);
@@ -75,31 +77,34 @@ app.post('/:minesweeperMode', async function(req,res){
 	}   
 });
 
-// app.post('/:minesweeperMode/isTangible', async function(req,res){
 
-// 	const testB = req.body;
-// 	console.log(req.body);
-// 	const userMetrics = new PostMetrics({
-// 		playerName: req.body.playerName,
-// 		minesweeperVersion: req.body.minesweeperVersion,
-// 		movesMade: req.body.movesMade,
-// 		timeTaken: req.body.timeTaken,
-// 		averageMoveDuration: req.body.averageMoveDuration,
-// 		totalMines: req.body.totalMines,
-// 		progressionPercentage: req.body.progressionPercentage,
-// 		flags: req.body.flags,
-// 		flagsUsed: req.body.flagsUsed,
-// 		regionLocationsPerSecond: req.body.regionLocationsPerSecond,
-// 	});
+//POSTING USER METRICS
+app.post(urlB, async function(req,res){
 
-// 	try{
+	const testB = req.body;
+	console.log(req.body);
+	const userMetrics = new PostMetrics({
+		playerName: req.body.playerName,
+		minesweeperVersion: req.body.minesweeperVersion,
+		movesMade: req.body.movesMade,
+		timeTaken: req.body.timeTaken,
+		averageMoveDuration: req.body.averageMoveDuration,
+		totalMines: req.body.totalMines,
+		progressionPercentage: req.body.progressionPercentage,
+		flags: req.body.flags,
+		flagsUsed: req.body.flagsUsed,
+		regionLocationsPerSecond: req.body.regionLocationsPerSecond,
+	});
 
-// 	const savedMetrics = await userMetrics.save();
-// 	res.json(savedMetrics);
-// 	}catch(err){
-// 		res.json({message: err});
-// 	}   
-// });
+	try{
+
+	const savedMetrics = await userMetrics.save();
+	res.json(savedMetrics);
+	}catch(err){
+		res.json({message: err});
+	}   
+});
+
 
 
 
