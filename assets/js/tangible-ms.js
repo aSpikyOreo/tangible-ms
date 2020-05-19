@@ -114,7 +114,7 @@ window.onload = function(){
 				playerStats.timeTaken++;
 				$(".ms-timer").text(playerStats.timeTaken);
 				$(".ms-flag-count").text(playerStats.flags);
-				if(playerStats.timeTaken >= 1800){
+				if(playerStats.timeTaken >= 180){
 					isGameOver = true;
 					$(".ms-timer").css("color","red")
 
@@ -421,7 +421,7 @@ window.onload = function(){
 	 	}
 
 	 	function determineOutcome(index){
-	 		if(!spaces[index].clicked){
+	 		if(!spaces[index].clicked && !spaces[index].flagged){
 	 			spaces[index].clicked = true;
 				playerStats.movesMade++;
 				var completed = viewGameProgression();
