@@ -141,7 +141,8 @@ window.onload = function(){
 				// console.log(posX, posY, idx, region);
 				var currentPositionMetrics = {region: region, positionX: posX, positionY: posY};
 				playerStats.timeTaken++;
-				$(".ms-timer").text(playerStats.timeTaken);
+				var timeRemaining = 300 - playerStats.timeTaken;
+				$(".ms-timer").text(timeRemaining);
 				$(".ms-flag-count").text(playerStats.flags);
 				if(playerStats.timeTaken >= 300){
 					isGameOver = true;
@@ -271,7 +272,7 @@ window.onload = function(){
 		// randomly assigns a mine using a random number generator. 
 		function assignMine(){
 	 		var rand_num = Math.floor(Math.random() * 20);
-	 		if(rand_num >= 16) {
+	 		if(rand_num >= 17) {
 	 			return true;
 	 		} else{
 	 			return false;

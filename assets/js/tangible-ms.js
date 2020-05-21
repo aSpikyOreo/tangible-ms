@@ -112,7 +112,8 @@ window.onload = function(){
 				// console.log(posX, posY, idx, region);
 				var currentPositionMetrics = {region: region, positionX: posX, positionY: posY};
 				playerStats.timeTaken++;
-				$(".ms-timer").text(playerStats.timeTaken);
+				var timeRemaining = 180 - playerStats.timeTaken;
+				$(".ms-timer").text(timeRemaining);
 				$(".ms-flag-count").text(playerStats.flags);
 				if(playerStats.timeTaken >= 180){
 					isGameOver = true;
