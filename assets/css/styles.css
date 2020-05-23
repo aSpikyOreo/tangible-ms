@@ -106,8 +106,8 @@ body{
 
 
 canvas{
-	height: 500px;
-	width:500px;
+	height: 60vw;
+	width:60vw;
 	background-color: grey;
 	border: 2px solid black;
 	
