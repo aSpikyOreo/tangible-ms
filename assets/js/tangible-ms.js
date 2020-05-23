@@ -43,6 +43,7 @@ window.onload = function(){
 	 	var stepW = Number(Math.floor((1/(ROWS)) * end));
 	 	var circleSize = Math.floor(0.5*stepH);
 	 	var spaces = new Array();
+	 	var timePerMove;
 	 	console.log(start,end,stepH, stepW);
 	 	var n = 0;
 	 	var isGameOver = false;
@@ -65,6 +66,7 @@ window.onload = function(){
 					   flags: 0, 
 					   flagsUsed: 0,
 					   regionLocationsPerSecond: [],
+					   timeTakenPerMove: [],
 					  };
 
 	 	//Construction of Game Mechanics
@@ -73,12 +75,18 @@ window.onload = function(){
 
 		var positionTimer = setInterval(trackPositionPerSecond, 1000);
 
+		var metricTimeRef = setInterval(addTrackingTime, 20);
+
 
 		// var timeExpired = setTimeout(function(){
 		// 	isGameOver = true;
 		// }, 90000);
 
 		viewPositionMetrics();
+
+		function addTrackingTime(){
+			timePerMove += 0.02;
+		}
 
 		function getMousePosition(){
 			$("canvas").mousemove(function(event){
@@ -427,6 +435,8 @@ window.onload = function(){
 				playerStats.movesMade++;
 				var completed = viewGameProgression();
 				playerStats.progressionPercentage = completed;
+				playerStats.timeTakenPerMove.push(timePerMove);
+				timePerMove = 0;
 				if(spaces[index].holdsMine){
 					alert("Game Over");
 					for (var i = 0; i < spaces.length; i++) {

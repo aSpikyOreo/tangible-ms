@@ -49,6 +49,10 @@ const MetricSchema = mongoose.Schema({
 		type: [Object],
 		required: true
 	},
+	timeTakenPerMove: {
+		type: [Number],
+		required: true
+	},
 
 });
 

@@ -45,7 +45,7 @@ window.onload = function(){
 	 	var squareSize = Math.floor(0.6*circleSize);
 	 	var scratchSize = Math.floor(0.3*circleSize);
 	 	var spaces = new Array();
-	 	var currentSquare;
+	 	var timePerMove;
 	 	console.log(start,end,stepH, stepW);
 	 	var n = 0;
 	 	var isGameOver = false;
@@ -63,6 +63,7 @@ window.onload = function(){
 					   flags: 0, 
 					   flagsUsed: 0,
 					   regionLocationsPerSecond: [],
+					   timeTakenPerMove: [],
 					  };
 
 	 	//Construction of Game Mechanics
@@ -85,6 +86,7 @@ window.onload = function(){
 
 		//Tangible-like scratching mechanic performed by mousemove listener. 
 		function scratchOff(){
+			timePerMove += 0.02;
 			getMousePosition();
 			var idx = getSpaceIndex(positionTracker.pos_x, positionTracker.pos_y);
 			if(spaces[idx] != undefined){
@@ -530,6 +532,8 @@ window.onload = function(){
 				playerStats.movesMade++;
 				var completed = viewGameProgression();
 				playerStats.progressionPercentage = completed;
+				playerStats.timeTakenPerMove.push(timePerMove);
+				timePerMove = 0;
 				if(spaces[index].holdsMine){
 					alert("Game Over");
 					for (var i = 0; i < spaces.length; i++) {

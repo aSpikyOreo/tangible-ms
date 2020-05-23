@@ -38,6 +38,11 @@ app.post("/stage3", function(req,res){
 })
 
 
+app.post("/stage3/isTangible", function(req,res){
+	res.redirect('/')
+})
+
+
 app.get("/stage3", function(req,res){
 	res.sendFile(path.join(__dirname,'public','tangible-ms.html'));
 	// res.send("Invalid location");
@@ -64,6 +69,7 @@ app.post('/:minesweeperMode', async function(req,res){
 		flags: req.body.flags,
 		flagsUsed: req.body.flagsUsed,
 		regionLocationsPerSecond: req.body.regionLocationsPerSecond,
+		timeTakenPerMove: req.body.timeTakenPerMove,
 	});
 
 	try{
